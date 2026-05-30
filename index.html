@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#5b6cff">
+    <title>Semanario Familiar</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header class="topbar">
+        <div class="brand">
+            <h1>Semanario Familiar</h1>
+            <span class="subtitle" id="weekSubtitle">Cargando…</span>
+        </div>
+        <nav class="week-nav">
+            <button id="prevWeek" class="nav-btn" aria-label="Semana anterior">‹</button>
+            <button id="todayBtn" class="nav-btn today">Hoy</button>
+            <button id="nextWeek" class="nav-btn" aria-label="Semana siguiente">›</button>
+        </nav>
+        <div class="actions">
+            <button id="syncBtn" class="action-btn" title="Configurar sincronización en la nube">
+                <span id="syncIcon">☁️</span>
+                <span id="syncLabel">Sync</span>
+            </button>
+            <button id="recurringBtn" class="action-btn" title="Gestionar eventos recurrentes">♻ Recurrentes</button>
+            <button id="exportBtn" class="action-btn" title="Descargar JSON">⬇ Exportar</button>
+            <button id="importBtn" class="action-btn" title="Cargar JSON">⬆ Importar</button>
+            <input type="file" id="importFile" accept="application/json" hidden>
+            <button id="resetBtn" class="action-btn danger" title="Volver a los datos iniciales">↺ Reset</button>
+        </div>
+    </header>
+
+    <section class="legend" id="legend"></section>
+
+    <main class="week-grid" id="weekGrid"></main>
+
+    <!-- Modal de edición -->
+    <div class="modal-backdrop" id="modalBackdrop" hidden>
+        <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+            <header class="modal-head">
+                <h2 id="modalTitle">Editar día</h2>
+                <button class="close-btn" id="closeModal" aria-label="Cerrar">×</button>
+            </header>
+
+            <div class="modal-body">
+                <div class="field">
+                    <label for="mealLunch">🥗 Comida</label>
+                    <input type="text" id="mealLunch" placeholder="Ej: Lentejas con verduras">
+                </div>
+                <div class="field">
+                    <label for="mealDinner">🌙 Cena</label>
+                    <input type="text" id="mealDinner" placeholder="Ej: Tortilla francesa y ensalada">
+                </div>
+
+                <div class="events-section" id="recurringDaySection" hidden>
+                    <div class="events-head">
+                        <h3>♻ Eventos recurrentes</h3>
+                        <span class="hint">Desmarca los que no se den esta vez</span>
+                    </div>
+                    <ul class="recurring-day-list" id="recurringDayList"></ul>
+                </div>
+
+                <div class="events-section">
+                    <div class="events-head">
+                        <h3>Eventos puntuales</h3>
+                        <button id="addEventBtn" class="add-btn">+ Añadir evento</button>
+                    </div>
+                    <ul class="events-edit-list" id="eventsEditList"></ul>
+                </div>
+            </div>
+
+            <footer class="modal-foot">
+                <button class="action-btn" id="cancelEdit">Cancelar</button>
+                <button class="action-btn primary" id="saveEdit">Guardar</button>
+            </footer>
+        </div>
+    </div>
+
+    <!-- Modal de configuración de sincronización con GitHub -->
+    <div class="modal-backdrop" id="syncModal" hidden>
+        <div class="modal" role="dialog" aria-modal="true" aria-labelledby="syncTitle">
+            <header class="modal-head">
+                <h2 id="syncTitle">☁️ Sincronización con GitHub</h2>
+                <button class="close-btn" id="closeSync" aria-label="Cerrar">×</button>
+            </header>
+
+            <div class="modal-body">
+                <p class="sync-help">
+                    Los datos del semanario se guardan como un fichero JSON dentro de un repositorio de GitHub.
+                    Cada cambio queda registrado como un commit y los 4 dispositivos ven lo mismo al recargar.
+                </p>
+                <details class="sync-steps-details">
+                    <summary>Cómo obtener el Personal Access Token (PAT)</summary>
+                    <ol class="sync-steps">
+                        <li>Entra en <a href="https://github.com/settings/tokens?type=beta" target="_blank" rel="noopener">github.com/settings/tokens</a> (Fine-grained tokens)</li>
+                        <li><strong>Generate new token</strong>. Nombre: "Semanario". Expiración a tu gusto.</li>
+                        <li>En <em>Repository access</em> elige <strong>Only select repositories</strong> y selecciona el repo donde estarán los datos.</li>
+                        <li>En <em>Repository permissions</em> → <strong>Contents: Read and write</strong>.</li>
+                        <li>Generate token, copia el valor (empieza por <code>github_pat_…</code>) y pégalo abajo.</li>
+                        <li>⚠️ El token se guarda solo en este dispositivo (localStorage). Cada miembro de la familia usa su propio token.</li>
+                    </ol>
+                </details>
+
+                <div class="field">
+                    <label for="ghToken">Personal Access Token</label>
+                    <input type="password" id="ghToken" placeholder="github_pat_..." autocomplete="off">
+                </div>
+                <div class="field-row">
+                    <div class="field">
+                        <label for="ghOwner">Usuario / org</label>
+                        <input type="text" id="ghOwner" placeholder="tu-usuario" autocomplete="off">
+                    </div>
+                    <div class="field">
+                        <label for="ghRepo">Repositorio</label>
+                        <input type="text" id="ghRepo" placeholder="semanario-datos" autocomplete="off">
+                    </div>
+                </div>
+                <div class="field-row">
+                    <div class="field">
+                        <label for="ghPath">Ruta del fichero</label>
+                        <input type="text" id="ghPath" value="datos.json" autocomplete="off">
+                    </div>
+                    <div class="field">
+                        <label for="ghBranch">Rama</label>
+                        <input type="text" id="ghBranch" value="main" autocomplete="off">
+                    </div>
+                </div>
+
+                <div class="sync-status" id="syncStatusMsg"></div>
+            </div>
+
+            <footer class="modal-foot">
+                <button class="action-btn danger" id="disableSync" title="Olvidar credenciales en este dispositivo">Desconectar</button>
+                <button class="action-btn" id="testSync">Probar conexión</button>
+                <button class="action-btn" id="initFile">Inicializar fichero</button>
+                <button class="action-btn" id="cancelSync">Cancelar</button>
+                <button class="action-btn primary" id="saveSync">Guardar y sincronizar</button>
+            </footer>
+        </div>
+    </div>
+
+    <!-- Modal de gestión de eventos recurrentes -->
+    <div class="modal-backdrop" id="recurringModal" hidden>
+        <div class="modal modal-wide" role="dialog" aria-modal="true" aria-labelledby="recurringTitle">
+            <header class="modal-head">
+                <h2 id="recurringTitle">♻ Eventos recurrentes semanales</h2>
+                <button class="close-btn" id="closeRecurring" aria-label="Cerrar">×</button>
+            </header>
+
+            <div class="modal-body" id="recurringBody"></div>
+
+            <footer class="modal-foot">
+                <button class="action-btn" id="cancelRecurring">Cancelar</button>
+                <button class="action-btn primary" id="saveRecurring">Guardar plantilla</button>
+            </footer>
+        </div>
+    </div>
+
+    <script src="data.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

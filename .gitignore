@@ -1,0 +1,24 @@
+# Memoria de Claude Code (privada)
+.claude/
+
+# Notas locales que NUNCA deben subirse
+Leeme.txt
+notas.txt
+TODO.txt
+
+# Tokens y secretos
+*.token
+.env
+.env.*
+secrets.json
+
+# Datos exportados localmente (el JSON real vive en el repo privado)
+semanario-*.json
+
+# Editor / sistema
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.vscode/
+.idea/
