@@ -457,40 +457,6 @@ function guardarRecurrentes() {
     render();
 }
 
-/* ─── Importar / Exportar ─── */
-function exportar() {
-    const blob = new Blob([JSON.stringify(estado, null, 2)], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `semanario-${isoFecha(new Date())}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-}
-
-function importar(file) {
-    const reader = new FileReader();
-    reader.onload = e => {
-        try {
-            const datos = JSON.parse(e.target.result);
-            if (!datos.familia || !datos.semana) throw new Error("Formato inválido");
-            estado = migrar(datos);
-            guardarEstado();
-            render();
-        } catch (err) {
-            alert("No se pudo leer el fichero: " + err.message);
-        }
-    };
-    reader.readAsText(file);
-}
-
-function reset() {
-    if (!confirm("¿Volver a los datos iniciales? Se perderán los cambios guardados.")) return;
-    estado = clonar(DATOS_INICIALES);
-    guardarEstado();
-    render();
-}
-
 /* ─── Sincronización con GitHub ─── */
 function getSyncConfig() {
     try {
@@ -778,16 +744,6 @@ document.addEventListener("DOMContentLoaded", () => {
         else if (!document.getElementById("recurringModal").hidden) cerrarGestorRecurrentes();
         else if (!document.getElementById("syncModal").hidden) cerrarConfigSync();
     });
-
-    document.getElementById("exportBtn").addEventListener("click", exportar);
-    document.getElementById("importBtn").addEventListener("click", () =>
-        document.getElementById("importFile").click()
-    );
-    document.getElementById("importFile").addEventListener("change", e => {
-        if (e.target.files[0]) importar(e.target.files[0]);
-        e.target.value = "";
-    });
-    document.getElementById("resetBtn").addEventListener("click", reset);
 
     // Modal de sync con GitHub
     document.getElementById("syncBtn").addEventListener("click", abrirConfigSync);
