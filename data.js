@@ -23,6 +23,7 @@ const DATOS_INICIALES = {
         { id: "pelayo",   nombre: "Pelayo",   color: "#B5EAD7" }, // verde menta
         { id: "cristina", nombre: "Cristina", color: "#FFB6C1" }, // rosa pastel
         { id: "hector",   nombre: "Héctor",   color: "#FFEAA7" }  // amarillo crema
+        { id: "familia",  nombre: "Familia",  color: "#B8C6D9" }  // gris azulado
     ],
 
     eventosRecurrentes: {
