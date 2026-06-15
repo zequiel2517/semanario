@@ -717,6 +717,24 @@ document.addEventListener("DOMContentLoaded", () => {
         render();
     });
 
+  
+  // Swipe lateral para cambiar de semana
+    let touchStartX = null;
+    const grid = document.getElementById("weekGrid") || document.body;
+    grid.addEventListener("touchstart", e => {
+        touchStartX = e.touches[0].clientX;
+    }, { passive: true });
+    grid.addEventListener("touchend", e => {
+        if (touchStartX === null) return;
+        const diff = touchStartX - e.changedTouches[0].clientX;
+        if (Math.abs(diff) > 50) {
+            semanaActiva = sumarDias(semanaActiva, diff > 0 ? 7 : -7);
+            render();
+        }
+        touchStartX = null;
+    }, { passive: true });
+
+  
     // Modal del día
     document.getElementById("closeModal").addEventListener("click", cerrarEditor);
     document.getElementById("cancelEdit").addEventListener("click", cerrarEditor);
